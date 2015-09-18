@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		436F45241BAA533F0062FAED /* MovieCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 436F45231BAA533F0062FAED /* MovieCell.swift */; settings = {ASSET_TAGS = (); }; };
 		437B027B1BA7FBB700B7E987 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437B027A1BA7FBB700B7E987 /* AppDelegate.swift */; };
 		437B02801BA7FBB700B7E987 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 437B027E1BA7FBB700B7E987 /* Main.storyboard */; };
 		437B02821BA7FBB700B7E987 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 437B02811BA7FBB700B7E987 /* Assets.xcassets */; };
@@ -15,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		436F45231BAA533F0062FAED /* MovieCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieCell.swift; sourceTree = "<group>"; };
 		437B02771BA7FBB700B7E987 /* RottenTomatoes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RottenTomatoes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		437B027A1BA7FBB700B7E987 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		437B027F1BA7FBB700B7E987 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -35,6 +37,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		436F45221BAA52FF0062FAED /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				436F45231BAA533F0062FAED /* MovieCell.swift */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
 		437B026E1BA7FBB700B7E987 = {
 			isa = PBXGroup;
 			children = (
@@ -54,6 +64,7 @@
 		437B02791BA7FBB700B7E987 /* RottenTomatoes */ = {
 			isa = PBXGroup;
 			children = (
+				436F45221BAA52FF0062FAED /* Views */,
 				43AE8C471BA94FCD00EB5EB3 /* View Controllers */,
 				437B027A1BA7FBB700B7E987 /* AppDelegate.swift */,
 				437B027E1BA7FBB700B7E987 /* Main.storyboard */,
@@ -144,6 +155,7 @@
 			files = (
 				437B027B1BA7FBB700B7E987 /* AppDelegate.swift in Sources */,
 				43AE8C461BA94FC100EB5EB3 /* MoviesViewController.swift in Sources */,
+				436F45241BAA533F0062FAED /* MovieCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
