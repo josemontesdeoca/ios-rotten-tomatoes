@@ -3,5 +3,6 @@
 
 target 'RottenTomatoes' do
   pod "AFNetworking"
+  pod "MBProgressHUD"
 end
 

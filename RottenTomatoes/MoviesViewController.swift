@@ -19,16 +19,23 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
 
         let url = NSURL(string: "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us")!
         let request = NSURLRequest(URL: url)
+
+        // Display a loading state
+        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+
         NSURLConnection.sendAsynchronousRequest(request, queue: NSOperationQueue.mainQueue()) { (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
             do {
                 let json = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary
-                
+
                 // Check if valid json
                 if let json = json {
                     self.movies = json["movies"] as? [NSDictionary]
                     self.tableView.reloadData()
+
+                    // Remove loading state
+                    MBProgressHUD.hideHUDForView(self.view, animated: true)
                 }
-                
+
                 print(json)
             } catch let error as NSError {
                 print("Failed to load: \(error.description)")
