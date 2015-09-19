@@ -13,37 +13,59 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet weak var tableView: UITableView!
     
     var movies: [NSDictionary]?
+    var refreshControl: UIRefreshControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        // setup pull to refresh
+        refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
+        tableView.insertSubview(refreshControl, atIndex: 0)
+        
+        tableView.dataSource = self
+        tableView.delegate = self
+        
+        getMovies(false)
+    }
+    
+    func getMovies(isRefresh:Bool) {
         let url = NSURL(string: "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us")!
         let request = NSURLRequest(URL: url)
-
-        // Display a loading state
-        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
-
+        
+        if !isRefresh {
+            // Display a loading state
+            MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+        }
+        
         NSURLConnection.sendAsynchronousRequest(request, queue: NSOperationQueue.mainQueue()) { (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
             do {
                 let json = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary
-
+                
                 // Check if valid json
                 if let json = json {
                     self.movies = json["movies"] as? [NSDictionary]
                     self.tableView.reloadData()
-
-                    // Remove loading state
-                    MBProgressHUD.hideHUDForView(self.view, animated: true)
+                    
+                    if isRefresh {
+                        self.refreshControl.endRefreshing()
+                    } else {
+                        // Remove loading state
+                        MBProgressHUD.hideHUDForView(self.view, animated: true)
+                    }
+                    
                 }
-
+                
                 print(json)
             } catch let error as NSError {
                 print("Failed to load: \(error.description)")
             }
         }
-        
-        tableView.dataSource = self
-        tableView.delegate = self
+
+    }
+    
+    func onRefresh() {
+        getMovies(true)
     }
 
     override func didReceiveMemoryWarning() {
