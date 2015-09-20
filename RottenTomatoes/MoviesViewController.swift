@@ -50,6 +50,16 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         getMovies(false)
     }
     
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        var nav = self.navigationController?.navigationBar
+        nav?.barStyle = UIBarStyle.Black
+        nav?.tintColor = UIColor.whiteColor()
+        nav?.backgroundColor = UIColor.greenColor()
+        nav?.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.yellowColor()]
+    }
+    
     func getMovies(isRefresh:Bool) {
         if !isRefresh {
             // Display a loading state
