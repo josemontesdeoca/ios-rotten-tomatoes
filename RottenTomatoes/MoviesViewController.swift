@@ -11,12 +11,16 @@ import UIKit
 class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var errorView: UIView!
     
     var movies: [NSDictionary]?
     var refreshControl: UIRefreshControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // hide error bar
+        self.errorView.hidden = true
         
         // setup pull to refresh
         refreshControl = UIRefreshControl()
@@ -30,17 +34,17 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     func getMovies(isRefresh:Bool) {
-        let url = NSURL(string: "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us")!
-        let request = NSURLRequest(URL: url)
-        
         if !isRefresh {
             // Display a loading state
             MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         }
         
-        NSURLConnection.sendAsynchronousRequest(request, queue: NSOperationQueue.mainQueue()) { (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
-            do {
-                let json = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary
+        let url = NSURL(string: "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us")!
+        let request = NSURLRequest(URL: url)
+        
+        NSURLConnection.sendAsynchronousRequest(request, queue: NSOperationQueue.mainQueue()) { (response, data, error) -> Void in
+            if let d = data {
+                let json = try! NSJSONSerialization.JSONObjectWithData(d, options: []) as? NSDictionary
                 
                 // Check if valid json
                 if let json = json {
@@ -57,8 +61,20 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 }
                 
                 print(json)
-            } catch let error as NSError {
-                print("Failed to load: \(error.description)")
+            } else {
+                if let e = error {
+                    print("Failed to load: \(e)")
+                }
+                
+                self.errorView.hidden = false
+                
+                if isRefresh {
+                    self.refreshControl.endRefreshing()
+                }
+                
+                self.delay(2, closure: {
+                    self.errorView.hidden = true
+                })
             }
         }
 
@@ -99,6 +115,15 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    }
+    
+    func delay(delay:Double, closure:()->()) {
+        dispatch_after(
+            dispatch_time(
+                DISPATCH_TIME_NOW,
+                Int64(delay * Double(NSEC_PER_SEC))
+            ),
+            dispatch_get_main_queue(), closure)
     }
 
     // MARK: - Navigation
