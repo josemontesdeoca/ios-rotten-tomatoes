@@ -16,12 +16,13 @@ Time spent: 9
 
 #### Optional
 
+- [x] Implement segmented control to switch between list view and grid view
+- [x] Add a tab bar for Box Office and DVD.
 - [ ] All images fade in.
 - [ ] For the larger poster, load the low-res first and switch to high-res when complete.
 - [ ] All images should be cached in memory and disk: AppDelegate has an instance of `NSURLCache` and `NSURLRequest` makes a request with `NSURLRequestReturnCacheDataElseLoad` cache policy. I tested it by turning off wifi and restarting the app.
 - [ ] Customize the highlight and selection effect of the cell.
 - [ ] Customize the navigation bar.
-- [x] Add a tab bar for Box Office and DVD.
 - [ ] Add a search bar: pretty simple implementation of searching against the existing table view data.
 
 ### Walkthrough

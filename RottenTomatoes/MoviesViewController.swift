@@ -8,10 +8,12 @@
 
 import UIKit
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource {
 
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var errorView: UIView!
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     let apiUrls = [
         "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us",
@@ -20,6 +22,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     var movies: [NSDictionary]?
     var refreshControl: UIRefreshControl!
+    var refreshControlGrid: UIRefreshControl!
     var tabIndex: Int!
     
     override func viewDidLoad() {
@@ -33,8 +36,14 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         refreshControl.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
         tableView.insertSubview(refreshControl, atIndex: 0)
         
+        refreshControlGrid = UIRefreshControl()
+        refreshControlGrid.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
+        collectionView.addSubview(refreshControlGrid)
+        
         tableView.dataSource = self
         tableView.delegate = self
+        
+        collectionView.dataSource = self
         
         tabIndex = self.tabBarController!.selectedIndex
         
@@ -57,6 +66,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 if let json = json {
                     self.movies = json["movies"] as? [NSDictionary]
                     self.tableView.reloadData()
+                    self.collectionView.reloadData()
                     
                     if isRefresh {
                         self.refreshControl.endRefreshing()
@@ -75,6 +85,10 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 
                 if isRefresh {
                     self.refreshControl.endRefreshing()
+                    self.refreshControlGrid.endRefreshing()
+                } else {
+                    // Remove loading state
+                    MBProgressHUD.hideHUDForView(self.view, animated: true)
                 }
                 
                 self.delay(2, closure: {
@@ -122,6 +136,28 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if let movies = movies {
+            return movies.count
+        } else {
+            return 0
+        }
+    }
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("MovieGridCell", forIndexPath: indexPath) as! MovieGridCell
+        
+        let movie = movies![indexPath.row]
+        
+        cell.titleLabel.text = movie["title"] as? String
+        
+        let posterUrl = NSURL(string: movie.valueForKeyPath("posters.thumbnail") as! String)!
+        
+        cell.posterImage.setImageWithURL(posterUrl)
+        
+        return cell
+    }
+    
     func delay(delay:Double, closure:()->()) {
         dispatch_after(
             dispatch_time(
@@ -130,15 +166,38 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             ),
             dispatch_get_main_queue(), closure)
     }
+    
+    @IBAction func onSegmentValueChanged(sender: AnyObject) {
+        print("Segmented Control Index: \(segmentedControl.selectedSegmentIndex)")
+        
+        if segmentedControl.selectedSegmentIndex == 1 {
+            tableView.hidden = true
+            collectionView.hidden = false
+        } else {
+            tableView.hidden = false
+            collectionView.hidden = true
+        }
+        
+    }
+    
 
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        let cell = sender as! UITableViewCell
-        let indexPath = tableView.indexPathForCell(cell)!
-
-        let movie = movies![indexPath.row]
+        var movie: NSDictionary!
+        
+        if segue.identifier == "MovieSegue" {
+            let cell = sender as! UITableViewCell
+            let indexPath = tableView.indexPathForCell(cell)!
+            
+            movie = movies![indexPath.row]
+        } else {
+            let cell = sender as! UICollectionViewCell
+            let indexPath = collectionView.indexPathForCell(cell)!
+            
+            movie = movies![indexPath.row]
+        }
 
         let movieDetailsViewController = segue.destinationViewController as! MovieDetailsController
 
