@@ -13,8 +13,14 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var errorView: UIView!
     
+    let apiUrls = [
+        "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us",
+        "http://api.rottentomatoes.com/api/public/v1.0/lists/dvds/new_releases.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us"
+    ]
+    
     var movies: [NSDictionary]?
     var refreshControl: UIRefreshControl!
+    var tabIndex: Int!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +36,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.dataSource = self
         tableView.delegate = self
         
+        tabIndex = self.tabBarController!.selectedIndex
+        
         getMovies(false)
     }
     
@@ -39,8 +47,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         }
         
-        let url = NSURL(string: "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us")!
-        let request = NSURLRequest(URL: url)
+        let request = NSURLRequest(URL: NSURL(string: apiUrls[tabIndex])!)
         
         NSURLConnection.sendAsynchronousRequest(request, queue: NSOperationQueue.mainQueue()) { (response, data, error) -> Void in
             if let d = data {
@@ -59,8 +66,6 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                     }
                     
                 }
-                
-                print(json)
             } else {
                 if let e = error {
                     print("Failed to load: \(e)")
@@ -105,7 +110,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
 
         cell.titleLabel.text = movie["title"] as? String
         cell.synopsisLabel.text = movie["synopsis"] as? String
-
+        
         let posterUrl = NSURL(string: movie.valueForKeyPath("posters.thumbnail") as! String)!
 
         cell.posterView.setImageWithURL(posterUrl)
@@ -138,5 +143,6 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let movieDetailsViewController = segue.destinationViewController as! MovieDetailsController
 
         movieDetailsViewController.movie = movie
+        movieDetailsViewController.hidesBottomBarWhenPushed = true
     }
 }
