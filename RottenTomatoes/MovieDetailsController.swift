@@ -21,8 +21,21 @@ class MovieDetailsController: UIViewController {
         titleLabel.text = movie["title"] as? String
         synopsisLabel.text = movie["synopsis"] as? String
         
-        let posterUrl = NSURL(string: movie.valueForKeyPath("posters.original") as! String)!
-        posterImage.setImageWithURL(posterUrl)
+        let posterUrl = movie.valueForKeyPath("posters.original") as! String
+        
+        var placeholderImage: UIImageView = UIImageView()
+        placeholderImage.setImageWithURL(NSURL(string: posterUrl)!)
+        
+        var posterOriginalUrl = ""
+        
+        // Hack to get around not having full size images
+        let range = posterUrl.rangeOfString(".*cloudfront.net/", options: .RegularExpressionSearch)
+        
+        if let range = range {
+            posterOriginalUrl = posterUrl.stringByReplacingCharactersInRange(range, withString: "https://content6.flixster.com/")
+        }
+        
+        posterImage.setImageWithURL(NSURL(string: posterOriginalUrl)!, placeholderImage: placeholderImage.image)
     }
 
     override func didReceiveMemoryWarning() {
