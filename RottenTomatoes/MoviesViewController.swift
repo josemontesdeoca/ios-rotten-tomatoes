@@ -8,12 +8,13 @@
 
 import UIKit
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource {
+class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UISearchBarDelegate {
 
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var errorView: UIView!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
+    @IBOutlet weak var searchBar: UISearchBar!
     
     let apiUrls = [
         "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json?apikey=99ekrcc859vkvku6yfj36hdm&limit=25&country=us",
@@ -21,6 +22,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     ]
     
     var movies: [NSDictionary]?
+    var filteredMovies: [NSDictionary]?
     var refreshControl: UIRefreshControl!
     var refreshControlGrid: UIRefreshControl!
     var tabIndex: Int!
@@ -44,6 +46,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.delegate = self
         
         collectionView.dataSource = self
+        
+        searchBar.delegate = self
         
         tabIndex = self.tabBarController!.selectedIndex
         
@@ -75,6 +79,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 // Check if valid json
                 if let json = json {
                     self.movies = json["movies"] as? [NSDictionary]
+                    self.filteredMovies = self.movies
+                    
                     self.tableView.reloadData()
                     self.collectionView.reloadData()
                     
@@ -120,7 +126,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
 
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let movies = movies {
+        if let movies = filteredMovies {
             return movies.count
         } else {
             return 0
@@ -130,7 +136,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
 
-        let movie = movies![indexPath.row]
+        let movie = filteredMovies![indexPath.row]
 
         cell.titleLabel.text = movie["title"] as? String
         cell.synopsisLabel.text = movie["synopsis"] as? String
@@ -144,10 +150,11 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        self.view.endEditing(true)
     }
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if let movies = movies {
+        if let movies = filteredMovies {
             return movies.count
         } else {
             return 0
@@ -157,7 +164,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("MovieGridCell", forIndexPath: indexPath) as! MovieGridCell
         
-        let movie = movies![indexPath.row]
+        let movie = filteredMovies![indexPath.row]
         
         cell.titleLabel.text = movie["title"] as? String
         
@@ -166,6 +173,17 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         cell.posterImage.setImageWithURL(posterUrl)
         
         return cell
+    }
+    
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+        filteredMovies = searchText.isEmpty ? movies : movies?.filter({ (movie: NSDictionary) -> Bool in
+            let movieTitle:String = movie["title"] as! String
+            let isAMatch = movieTitle.rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
+            return isAMatch
+        })
+        
+        tableView.reloadData()
+        collectionView.reloadData()
     }
     
     func delay(delay:Double, closure:()->()) {
@@ -189,7 +207,6 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         }
         
     }
-    
 
     // MARK: - Navigation
 
@@ -201,12 +218,12 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             let cell = sender as! UITableViewCell
             let indexPath = tableView.indexPathForCell(cell)!
             
-            movie = movies![indexPath.row]
+            movie = filteredMovies![indexPath.row]
         } else {
             let cell = sender as! UICollectionViewCell
             let indexPath = collectionView.indexPathForCell(cell)!
             
-            movie = movies![indexPath.row]
+            movie = filteredMovies![indexPath.row]
         }
 
         let movieDetailsViewController = segue.destinationViewController as! MovieDetailsController
