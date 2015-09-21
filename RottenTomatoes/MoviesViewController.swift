@@ -86,6 +86,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                     
                     if isRefresh {
                         self.refreshControl.endRefreshing()
+                        self.refreshControlGrid.endRefreshing()
                     } else {
                         // Remove loading state
                         MBProgressHUD.hideHUDForView(self.view, animated: true)
@@ -137,9 +138,12 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
 
         let movie = filteredMovies![indexPath.row]
+        let ratings = movie.valueForKeyPath("ratings.critics_score") as? Int
 
         cell.titleLabel.text = movie["title"] as? String
         cell.synopsisLabel.text = movie["synopsis"] as? String
+        cell.ratingLabel.text = ratings != nil ? "\(ratings!)%" : ""
+        cell.ratingImage.image = ratings >= 60 ? UIImage(named: "Fresh") : UIImage(named: "Rotten")
         
         let posterUrl = NSURL(string: movie.valueForKeyPath("posters.thumbnail") as! String)!
 
